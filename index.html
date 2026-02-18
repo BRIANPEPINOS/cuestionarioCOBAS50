@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css" />
+    <title>Quiz Daypo Offline</title>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-title">CUESTIONARIOS COBAS 50</div>
+            <div class="brand-sub">Offline • Daypo XML • IndexedDB</div>
+        </div>
+
+        <div class="toolbar">
+            <label class="file">
+                <input id="fileInput" type="file" accept=".xml" />
+                <span>Seleccionar archivo</span>
+            </label>
+
+            <button id="btnImport" class="btn primary">Importar XML</button>
+            <button id="btnExportBackup" class="btn primary">Exportar respaldo</button>
+
+
+            <div class="ctl">
+                <span>Modo</span>
+                <select id="mode">
+                    <option>Completo</option>
+                    <option>Personalizado (N preguntas)</option>
+                </select>
+            </div>
+
+            <div class="ctl">
+                <span>N</span>
+                <input id="n" type="number" value="50" min="1" />
+            </div>
+
+            <label class="check">
+                <input id="random" type="checkbox" checked />
+                <span>Aleatorio</span>
+            </label>
+
+            <button id="btnGrade" class="btn">Calificar</button>
+            <button id="btnRetry" class="btn ghost" disabled>Reintentar falladas</button>
+        </div>
+    </header>
+
+    <main class="app">
+        <aside class="sidebar">
+            <div class="side-title">Cuestionarios</div>
+            <ul id="quizList" class="quiz-list"></ul>
+        </aside>
+
+        <section class="content">
+            <div class="content-head">
+                <h2 id="quizTitle" class="quiz-title">Selecciona un cuestionario</h2>
+                <div id="result" class="result"></div>
+            </div>
+
+            <div id="questions" class="questions"></div>
+        </section>
+    </main>
+
+
+
+
+    <!-- Modal: Editar pregunta -->
+    <div id="editModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-backdrop" id="editBackdrop"></div>
+
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+            <div class="modal-header">
+                <h3 id="editTitle">Editar pregunta</h3>
+                <button id="editClose" class="iconbtn" title="Cerrar">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <label class="field">
+                    <span>Enunciado</span>
+                    <textarea id="editPrompt" rows="5" placeholder="Escribe el enunciado..."></textarea>
+                </label>
+                <!-- Imagen (dentro del modal) -->
+                <div class="field">
+                    <span>Imagen (opcional)</span>
+
+                    <div class="img-tools">
+                        <input id="editImgFile" type="file" accept="image/*" />
+                        <button id="editImgClear" class="btn ghost" type="button">Quitar</button>
+                    </div>
+
+                    <div id="editImgWarn" class="hint"></div>
+
+                    <div id="editImgPreview" class="img-preview hidden">
+                        <img id="editImgTag" alt="Vista previa" />
+                    </div>
+                </div>
+
+                <label class="field">
+                    <span>Opciones (una por línea)</span>
+                    <textarea id="editOptions" rows="6" placeholder="Opción 1&#10;Opción 2&#10;Opción 3"></textarea>
+                </label>
+
+                <div class="row">
+                    <label class="field" style="max-width:220px;">
+                        <span>Índice correcta (1..N)</span>
+                        <input id="editCorrect" type="number" min="1" value="1" />
+                    </label>
+
+                    <div class="hint" id="editHint"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="editCancel" class="btn">Cancelar</button>
+                <button id="editSave" class="btn primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", async () => {
+                const reg = await navigator.serviceWorker.register("./sw.js");
+
+                // fuerza a que busque updates (útil cuando estás desarrollando)
+                reg.update();
+
+                // cuando el nuevo SW toma control, recarga para usar los assets nuevos
+                navigator.serviceWorker.addEventListener("controllerchange", () => {
+                    window.location.reload();
+                });
+            });
+        }
+    </script>
+
+
+</body>
+
+</html>
