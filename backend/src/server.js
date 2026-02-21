@@ -19,7 +19,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
-app.options("*", cors());
+app.options("/*", cors());
 app.use(express.json({ limit: "25mb" })); // imágenes base64 pueden ser pesadas
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
