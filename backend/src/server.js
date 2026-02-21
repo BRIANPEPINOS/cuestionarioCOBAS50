@@ -10,9 +10,14 @@ const publicRoutes = require("./routes/public.routes");
 const app = express();
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
+  origin: [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "https://*.netlify.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
 app.use(express.json({ limit: "25mb" })); // imágenes base64 pueden ser pesadas
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
