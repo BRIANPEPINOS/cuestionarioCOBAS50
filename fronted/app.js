@@ -4,7 +4,7 @@
 const API_BASE =
   location.hostname === "localhost" || location.hostname === "127.0.0.1"
     ? "http://localhost:4000"
-    : "https://TU-DOMINIO-API.com";
+    : "https://cuestionariocobas50.onrender.com";
 
 let authToken = localStorage.getItem("token") || "";
 let authRole = localStorage.getItem("role") || "";
