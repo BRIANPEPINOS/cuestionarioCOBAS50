@@ -13,7 +13,7 @@
     <header class="topbar">
         <div class="brand">
             <div class="brand-title">CUESTIONARIOS COBAS 50</div>
-            <div class="brand-sub">Offline • Daypo XML • IndexedDB</div>
+           
         </div>
 
         <div class="toolbar">
@@ -46,6 +46,27 @@
 
             <button id="btnGrade" class="btn">Calificar</button>
             <button id="btnRetry" class="btn ghost" disabled>Reintentar falladas</button>
+            <!-- Usuario (dropdown) -->
+            <div class="userbox" id="userBox">
+                <button id="userBtn" class="iconbtn userbtn" type="button" title="Cuenta">
+                    👤
+                </button>
+
+                <div id="userMenu" class="usermenu hidden" role="menu" aria-label="Cuenta">
+                    <div class="usermenu-title">Iniciar sesión</div>
+
+                    <input id="loginEmail" class="usermenu-input" placeholder="email" autocomplete="username" />
+                    <input id="loginPass" class="usermenu-input" type="password" placeholder="password"
+                        autocomplete="current-password" />
+
+                    <div class="usermenu-actions">
+                        <button id="btnLogin" class="btn primary" type="button">Login</button>
+                        <button id="btnLogout" class="btn ghost" type="button" style="display:none;">Logout</button>
+                    </div>
+
+                    <div id="userInfo" class="usermenu-info"></div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -120,7 +141,12 @@
             </div>
         </div>
     </div>
-
+    <!-- Floating actions -->
+    <div id="fabBar" class="fabbar">
+        <button id="fabGrade" class="btn primary">Calificar</button>
+        <button id="fabRetry" class="btn ghost" disabled>Reintentar falladas</button>
+        <div id="fabResult" class="fabresult"></div>
+    </div>
     <script src="app.js"></script>
     <script>
         if ("serviceWorker" in navigator) {

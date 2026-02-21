@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
+
+model Quiz {
+  id        Int        @id @default(autoincrement())
+  title     String
+  createdAt DateTime   @default(now())
+  questions Question[]
+}
+
+model Question {
+  id          Int           @id @default(autoincrement())
+  quizId      Int
+  origNo      Int?
+  prompt      String
+  explanation String?       @default("")
+  createdAt   DateTime      @default(now())
+
+  quiz        Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options     Option[]
+  image       QuestionImage?
+}
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  optIndex   Int
+  text       String
+  isCorrect  Int      @default(0)
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model QuestionImage {
+  id         Int      @id @default(autoincrement())
+  questionId Int      @unique
+  bucket     String   @default("question-images")
+  path       String   // ej: "quiz_12/q_55.png"
+  mime       String?
+  createdAt  DateTime @default(now())
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}

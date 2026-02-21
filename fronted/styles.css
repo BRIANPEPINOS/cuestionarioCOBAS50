@@ -82,7 +82,14 @@ body{
   color: var(--text);
   font-size: 14px;
 }
-.ctl input{ width: 84px; }
+/* Solo para el input numérico N */
+.ctl input[type="number"]{ width: 84px; }
+
+/* Para email y password */
+#loginEmail, #loginPass{
+  width: 180px;
+  min-width: 160px;
+}
 
 .check{
   display:flex;
@@ -407,4 +414,129 @@ textarea{ resize: vertical; min-height: 110px; }
   .toolbar{ gap: 8px; }
   .ctl input{ width: 70px; }
   .brand-title{ font-size: 16px; }
+}
+/* ===== Fix toolbar wrap / proportions ===== */
+.topbar .toolbar{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.topbar .toolbar .ctl{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar input[type="text"],
+.topbar input[type="password"],
+.topbar input:not([type]){
+  width: 180px;
+  max-width: 40vw;
+}
+
+.topbar .btn{
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px){
+  .app{
+    grid-template-columns: 1fr; /* sidebar arriba, contenido abajo */
+  }
+  .sidebar{
+    max-height: 260px;
+    overflow: auto;
+  }
+}
+
+/* ===== Floating action bar ===== */
+.fabbar{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.fabresult{
+  max-width: min(420px, 86vw);
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(15,26,48,.92);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-weight: 800;
+  display: none; /* se muestra cuando hay resultado */
+}
+
+/* En pantallas pequeñas, que no tape demasiado */
+@media (max-width: 520px){
+  .fabbar{ right: 12px; bottom: 12px; }
+}
+/* ===== User dropdown ===== */
+.userbox{
+  position: relative;
+  margin-left: auto; /* empuja a la derecha */
+}
+
+.userbtn{
+  display:inline-grid;
+  place-items:center;
+  font-size: 18px;
+}
+
+.usermenu{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 280px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(15,26,48,.95);
+  box-shadow: var(--shadow);
+  z-index: 100;
+}
+
+.usermenu.hidden{ display:none; }
+
+.usermenu-title{
+  font-weight: 900;
+  margin-bottom: 10px;
+  letter-spacing: .2px;
+}
+
+.usermenu-input{
+  width: 100%;
+  height: 42px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  padding: 0 12px;
+  outline: none;
+}
+
+.usermenu-actions{
+  display:flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.usermenu-info{
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* En pantallas pequeñas, que no se salga */
+@media (max-width: 520px){
+  .usermenu{ width: min(320px, 92vw); }
 }
