@@ -289,7 +289,7 @@ function renderQuestions(qs) {
         card.className = "qcard";
         card.dataset.qid = q.id;
         card.dataset.correct = (q.correct && q.correct.length) ? String(q.correct[0]) : "";
-        const tag = q.origNo ? q.origNo : idx + 1;
+        const tag = (q.origNo !== null && q.origNo !== undefined) ? q.origNo : (idx + 1);
 
         // ===== Header =====
         const top = document.createElement("div");

@@ -612,3 +612,4 @@ textarea{ resize: vertical; min-height: 110px; }
     font-weight: 900;
   }
 }
+.qtitle { white-space: pre-line; }
