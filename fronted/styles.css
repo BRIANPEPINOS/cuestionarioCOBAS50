@@ -574,15 +574,34 @@ textarea{ resize: vertical; min-height: 110px; }
 }
 
 
+/* ===== Feedback visual limpio con ✔ ===== */
+
+.opt{
+  position: relative;
+}
+
+/* Respuesta correcta seleccionada */
+.opt.good{
+  border-color: rgba(22,163,74,.75);
+  background: rgba(22,163,74,.12);
+}
+
+/* Respuesta incorrecta seleccionada */
+.opt.wrong{
+  border-color: rgba(239,68,68,.75);
+  background: rgba(239,68,68,.10);
+}
+
+/* Marca visual de la correcta */
 .opt.correct::after{
-  content: "Correcta";
+  content: "✔";
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(59, 246, 68, 0.95);
+  font-size: 18px;
+  font-weight: 900;
+  color: #16a34a;
 }
 
 /* En móvil solo mostrar check */
