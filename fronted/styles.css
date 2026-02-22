@@ -568,8 +568,8 @@ textarea{ resize: vertical; min-height: 110px; }
 }
 
 .opt.correct{
-  box-shadow: 0 0 0 2px rgba(59,130,246,.18) inset;
-  border-color: rgba(59,130,246,.55);
+  box-shadow: 0 0 0 2px rgba(59, 246, 131, 0.18) inset;
+  border-color: rgba(87, 246, 59, 0.69);
   position: relative;
 }
 
@@ -581,5 +581,5 @@ textarea{ resize: vertical; min-height: 110px; }
   transform: translateY(-50%);
   font-size: 12px;
   font-weight: 800;
-  color: rgba(59,130,246,.95);
+  color: rgba(59, 246, 68, 0.95);
 }
