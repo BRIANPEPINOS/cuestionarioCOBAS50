@@ -613,3 +613,16 @@ textarea{ resize: vertical; min-height: 110px; }
   }
 }
 .qtitle { white-space: pre-line; }
+
+/* Admin: resaltar correcta */
+.opt.admin-correct {
+  outline: 2px solid rgba(0, 255, 140, 0.35);
+  box-shadow: 0 0 0 2px rgba(0, 255, 140, 0.15) inset;
+}
+
+.admin-correct-badge {
+  margin-left: auto;
+  font-weight: 800;
+  padding: 0 10px;
+  opacity: 0.9;
+}
