@@ -27,6 +27,21 @@ body{
               var(--bg);
   color:var(--text);
 }
+/* Overlay fijo para que el fondo no “cambie” al scrollear */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+
+  /* capa oscura uniforme + un poquito de tinte */
+  background: linear-gradient(
+    180deg,
+    rgba(11,18,32,0.92) 0%,
+    rgba(11,18,32,0.92) 100%
+  );
+}
 
 /* ===== Topbar ===== */
 .topbar{
