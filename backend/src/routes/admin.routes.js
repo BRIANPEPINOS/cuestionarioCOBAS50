@@ -77,8 +77,15 @@ router.put("/questions/:id", requireAuth, requireAdmin, async (req, res) => {
       const q = await tx.question.update({
         where: { id: questionId },
         data: {
-          prompt: prompt.trim(),
-          origNo: origNo === null || origNo === undefined || origNo === "" ? null : parseInt(origNo, 10),
+          prompt: prompt.replace(/\r\n/g, "\n").trim(),
+          origNo: (() => {
+            if (origNo === null || origNo === undefined) return null;
+            const s = String(origNo).trim();
+            if (!s) return null;
+            const n = parseInt(s, 10);
+            if (Number.isNaN(n) || n <= 0) return null; // ✅ 1..N, nunca 0
+            return n;
+          })(),
         },
         select: { id: true, quizId: true, origNo: true, prompt: true },
       });
