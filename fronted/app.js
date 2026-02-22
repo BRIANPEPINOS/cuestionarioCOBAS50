@@ -2,9 +2,9 @@
    API + Auth (Admin/User)
    =============================== */
 const API_BASE =
-  location.hostname === "localhost" || location.hostname === "127.0.0.1"
-    ? "http://localhost:4000"
-    : "https://cuestionariocobas50.onrender.com";
+    location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        ? "http://localhost:4000"
+        : "https://cuestionariocobas50.onrender.com";
 
 let authToken = localStorage.getItem("token") || "";
 let authRole = localStorage.getItem("role") || "";
@@ -288,7 +288,7 @@ function renderQuestions(qs) {
         const card = document.createElement("div");
         card.className = "qcard";
         card.dataset.qid = q.id;
-
+        card.dataset.correct = (q.correct && q.correct.length) ? String(q.correct[0]) : "";
         const tag = q.origNo ? q.origNo : idx + 1;
 
         // ===== Header =====
@@ -344,7 +344,30 @@ function renderQuestions(qs) {
         // ===== Options =====
         const optsDiv = document.createElement("div");
         optsDiv.className = "opts";
+        function applyInstantFeedback(selectedIndex) {
+            const correctIndex = parseInt(card.dataset.correct || "-1", 10);
 
+            card.classList.remove("ok", "bad");
+
+            optsDiv.querySelectorAll(".opt").forEach(el => {
+                el.classList.remove("good", "wrong", "correct");
+            });
+
+            if (correctIndex >= 0) {
+                const correctRow = optsDiv.querySelector(`.opt[data-opt="${correctIndex}"]`);
+                if (correctRow) correctRow.classList.add("correct");
+            }
+
+            const selectedRow = optsDiv.querySelector(`.opt[data-opt="${selectedIndex}"]`);
+
+            if (selectedIndex === correctIndex) {
+                selectedRow.classList.add("good");
+                card.classList.add("ok");
+            } else {
+                selectedRow.classList.add("wrong");
+                card.classList.add("bad");
+            }
+        }
         for (const opt of q.options) {
             const row = document.createElement("div");
             row.className = "opt";
@@ -357,10 +380,17 @@ function renderQuestions(qs) {
             const lab = document.createElement("label");
             lab.textContent = opt.t;
 
-            row.onclick = () => (input.checked = true);
+            row.dataset.opt = String(opt.i);
+
+            row.onclick = () => {
+                input.checked = true;
+                applyInstantFeedback(opt.i);
+            };
+
             lab.onclick = (ev) => {
                 ev.preventDefault();
                 input.checked = true;
+                applyInstantFeedback(opt.i);
             };
 
             row.appendChild(input);

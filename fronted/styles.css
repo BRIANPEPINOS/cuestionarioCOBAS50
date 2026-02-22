@@ -540,3 +540,31 @@ textarea{ resize: vertical; min-height: 110px; }
 @media (max-width: 520px){
   .usermenu{ width: min(320px, 92vw); }
 }
+
+/* Feedback inmediato por opción */
+.opt.good{
+  border-color: rgba(22,163,74,.65);
+  background: rgba(22,163,74,.12);
+}
+
+.opt.wrong{
+  border-color: rgba(239,68,68,.70);
+  background: rgba(239,68,68,.10);
+}
+
+.opt.correct{
+  box-shadow: 0 0 0 2px rgba(59,130,246,.18) inset;
+  border-color: rgba(59,130,246,.55);
+  position: relative;
+}
+
+.opt.correct::after{
+  content: "Correcta";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(59,130,246,.95);
+}
