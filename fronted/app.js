@@ -116,6 +116,7 @@ function applyRoleUI() {
             ? `Sesión activa (${authRole || "user"})`
             : "Modo público (sin sesión)";
     }
+    applyFabVisibility();
 }
 
 /* ===============================
@@ -618,6 +619,13 @@ const fabGrade = document.getElementById("fabGrade");
 const fabRetry = document.getElementById("fabRetry");
 const fabReset = document.getElementById("fabReset");
 const fabResult = document.getElementById("fabResult");
+const fabBar = document.getElementById("fabBar");
+
+function applyFabVisibility() {
+  if (!fabBar) return;
+  const isAdmin = authRole === "admin";
+  fabBar.style.display = isAdmin ? "none" : "";
+}
 
 function scrollToQuizTop() {
     const header = document.querySelector(".content-head");
@@ -985,6 +993,7 @@ async function parseDaypoXmlText(xmlText) {
     try {
         applyRoleUI();
         await loadQuizzesFromAPI();
+      
     } catch (e) {
         console.warn("Boot warning:", e?.message || e);
     }
