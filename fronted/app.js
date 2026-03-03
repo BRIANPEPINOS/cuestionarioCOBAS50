@@ -41,6 +41,7 @@ const fileInputEl = document.getElementById("fileInput");
 const btnImportEl = document.getElementById("btnImport");
 const btnGradeEl = document.getElementById("btnGrade");
 const btnRetryEl = document.getElementById("btnRetry");
+const btnResetEl = document.getElementById("btnReset");
 
 const modeEl = document.getElementById("mode");
 const nEl = document.getElementById("n");
@@ -82,7 +83,13 @@ document.addEventListener("keydown", (e) => {
    State
    =============================== */
 let currentQuizId = null;
-let currentQuestions = [];
+
+// ✅ baseQuestions = test original (completo / N / random)
+let baseQuestions = [];
+
+// ✅ activeQuestions = lo que estás practicando ahora (inicia igual a baseQuestions)
+let activeQuestions = [];
+
 let lastWrongIds = [];
 
 /* ===============================
@@ -100,6 +107,9 @@ function applyRoleUI() {
 
     btnLogin.style.display = authToken ? "none" : "";
     btnLogout.style.display = authToken ? "" : "none";
+
+    // reset siempre visible
+    if (btnResetEl) btnResetEl.style.display = "";
 
     if (userInfo) {
         userInfo.textContent = authToken
@@ -146,8 +156,10 @@ btnLogout.onclick = async () => {
     questionsEl.innerHTML = "";
     quizTitleEl.textContent = "Selecciona un cuestionario";
     resultEl.textContent = "";
+
     currentQuizId = null;
-    currentQuestions = [];
+    baseQuestions = [];
+    activeQuestions = [];
     lastWrongIds = [];
     btnRetryEl.disabled = true;
 
@@ -155,9 +167,7 @@ btnLogout.onclick = async () => {
         await loadQuizzesFromAPI();
     } catch (e) {
         console.error(e);
-        alert(
-            "No pude cargar los cuestionarios públicos. Revisa si el backend está encendido."
-        );
+        alert("No pude cargar los cuestionarios públicos. Revisa si el backend está encendido.");
     }
 };
 
@@ -233,13 +243,11 @@ function renderQuizList(quizzes) {
                 const j = await r.json().catch(() => ({}));
                 if (!r.ok) return alert(j.error || "No se pudo eliminar");
 
-                // Recargar lista (usando apiFetch para respetar auth si aplica)
                 const r2 = await apiFetch("/public/quizzes");
                 const j2 = await r2.json().catch(() => ({}));
                 const list = j2.quizzes || [];
                 renderQuizList(list);
 
-                // Si se borró el que estaba abierto, seleccionar otro
                 if (String(currentQuizId) === String(q.id)) {
                     if (list.length > 0) {
                         const nextId = list[0].id;
@@ -251,7 +259,8 @@ function renderQuizList(quizzes) {
                         questionsEl.innerHTML = "";
                         resultEl.textContent = "";
                         currentQuizId = null;
-                        currentQuestions = [];
+                        baseQuestions = [];
+                        activeQuestions = [];
                         lastWrongIds = [];
                         btnRetryEl.disabled = true;
                     }
@@ -262,9 +271,7 @@ function renderQuizList(quizzes) {
         }
 
         li.addEventListener("click", async () => {
-            document
-                .querySelectorAll("#quizList li")
-                .forEach((x) => x.classList.remove("active"));
+            document.querySelectorAll("#quizList li").forEach((x) => x.classList.remove("active"));
             li.classList.add("active");
             await openQuiz(q.id);
         });
@@ -351,15 +358,11 @@ function renderQuestions(qs) {
             });
 
             if (correctIndex >= 0) {
-                const correctRow = optsDiv.querySelector(
-                    `.opt[data-opt="${correctIndex}"]`
-                );
+                const correctRow = optsDiv.querySelector(`.opt[data-opt="${correctIndex}"]`);
                 if (correctRow) correctRow.classList.add("correct");
             }
 
-            const selectedRow = optsDiv.querySelector(
-                `.opt[data-opt="${selectedIndex}"]`
-            );
+            const selectedRow = optsDiv.querySelector(`.opt[data-opt="${selectedIndex}"]`);
 
             if (selectedIndex === correctIndex) {
                 selectedRow?.classList.add("good");
@@ -382,18 +385,19 @@ function renderQuestions(qs) {
 
             const lab = document.createElement("label");
             lab.textContent = opt.t;
+
             // ✅ Mostrar correcta siempre en admin (sin marcar el radio)
             if (authRole === "admin") {
                 const correctIndex = parseInt(card.dataset.correct || "-1", 10);
                 if (opt.i === correctIndex) {
-                    row.classList.add("admin-correct"); // clase visual
-                    // mini icono (✓) al final
+                    row.classList.add("admin-correct");
                     const badge = document.createElement("span");
                     badge.className = "admin-correct-badge";
                     badge.textContent = "✓";
                     row.appendChild(badge);
                 }
             }
+
             row.onclick = () => {
                 input.checked = true;
                 applyInstantFeedback(opt.i);
@@ -432,7 +436,6 @@ async function openQuizFromAPI(quizId) {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || "Error cargando quiz");
 
-    // backend devuelve directo: { id,title,questions }
     const quiz = j.quiz || j;
 
     quizTitleEl.textContent = quiz.title || "Cuestionario";
@@ -441,7 +444,6 @@ async function openQuizFromAPI(quizId) {
     btnRetryEl.disabled = true;
 
     const normalized = (quiz.questions || []).map((q) => {
-        // ⚠️ NO uses "q.origNo || 0" porque convierte null a 0 y luego te sale "0."
         const safeOrigNo =
             typeof q.origNo === "number" && Number.isFinite(q.origNo) && q.origNo > 0
                 ? q.origNo
@@ -457,8 +459,8 @@ async function openQuizFromAPI(quizId) {
             Array.isArray(q.correct) && q.correct.length
                 ? q.correct
                 : optionsNorm
-                    .filter((o) => o.isCorrect === 1)
-                    .map((o) => o.i);
+                      .filter((o) => o.isCorrect === 1)
+                      .map((o) => o.i);
 
         return {
             id: q.id,
@@ -470,7 +472,6 @@ async function openQuizFromAPI(quizId) {
         };
     });
 
-    // Orden estable
     normalized.sort((a, b) => {
         const ao = a.origNo ?? 999999;
         const bo = b.origNo ?? 999999;
@@ -478,10 +479,12 @@ async function openQuizFromAPI(quizId) {
         return a.id - b.id;
     });
 
-    currentQuestions = pickQuestions(normalized, quizId);
-    renderQuestions(currentQuestions);
+    // ✅ Base test + active practice
+    baseQuestions = pickQuestions(normalized, quizId);
+    activeQuestions = baseQuestions.slice();
 
-    // limpia flotante resultado cuando cambias quiz
+    renderQuestions(activeQuestions);
+
     try {
         fabRetry.disabled = true;
         fabResult.style.display = "none";
@@ -489,15 +492,14 @@ async function openQuizFromAPI(quizId) {
     } catch { }
 }
 
-// Alias para renderQuizList
 const openQuiz = (id) => openQuizFromAPI(id);
 
 /* ===============================
-   Grading (local)
+   Grading (local) - ✅ SOLO activeQuestions
    =============================== */
 function collectAnswers() {
     const answers = {};
-    for (const q of currentQuestions) {
+    for (const q of activeQuestions) {
         const checked = document.querySelector(`input[name="q_${q.id}"]:checked`);
         answers[String(q.id)] = checked ? parseInt(checked.value, 10) : null;
     }
@@ -510,10 +512,11 @@ function gradeLocal() {
     let correct = 0;
     const wrong = [];
 
-    for (const q of currentQuestions) {
+    for (const q of activeQuestions) {
         total++;
         const sel = answers[String(q.id)];
         const ok = sel !== null && q.correct.includes(sel);
+
         if (ok) correct++;
         else wrong.push(q.id);
 
@@ -526,15 +529,48 @@ function gradeLocal() {
 
     const score = total ? (correct / total) * 100 : 0;
     resultEl.textContent = `Resultado: ${correct}/${total} (${score.toFixed(1)}%)`;
+
     lastWrongIds = wrong;
     btnRetryEl.disabled = wrong.length === 0;
 }
 
 function retryWrong() {
+    if (!lastWrongIds.length) return;
+
+    // ✅ Encadena sobre lo que estás practicando ahora
     const set = new Set(lastWrongIds);
-    const filtered = currentQuestions.filter((q) => set.has(q.id));
-    resultEl.textContent = "Reintentando solo falladas…";
-    renderQuestions(filtered);
+    activeQuestions = activeQuestions.filter((q) => set.has(q.id));
+
+    resultEl.textContent = `Reintentando solo falladas (${activeQuestions.length})…`;
+    renderQuestions(activeQuestions);
+
+    // se recalcula luego al volver a calificar
+    btnRetryEl.disabled = true;
+
+    try {
+        fabRetry.disabled = true;
+        syncFabResult();
+    } catch { }
+}
+
+/* ===============================
+   Reiniciar test (✅ vuelve a baseQuestions)
+   =============================== */
+function resetTest() {
+    if (!currentQuizId) return;
+
+    activeQuestions = baseQuestions.slice();
+    lastWrongIds = [];
+    btnRetryEl.disabled = true;
+
+    resultEl.textContent = "";
+    renderQuestions(activeQuestions);
+
+    try {
+        fabRetry.disabled = true;
+        fabResult.style.display = "none";
+        fabResult.textContent = "";
+    } catch { }
 }
 
 /* ===============================
@@ -576,9 +612,11 @@ btnGradeEl.onclick = () => {
 };
 
 btnRetryEl.onclick = () => retryWrong();
+btnResetEl && (btnResetEl.onclick = () => resetTest());
 
 const fabGrade = document.getElementById("fabGrade");
 const fabRetry = document.getElementById("fabRetry");
+const fabReset = document.getElementById("fabReset");
 const fabResult = document.getElementById("fabResult");
 
 function scrollToQuizTop() {
@@ -599,6 +637,11 @@ fabRetry.onclick = () => {
     btnRetryEl.click();
     scrollToQuizTop();
 };
+
+fabReset && (fabReset.onclick = () => {
+    resetTest();
+    scrollToQuizTop();
+});
 
 function syncFabResult() {
     const txt = (resultEl.textContent || "").trim();
@@ -623,8 +666,6 @@ gradeLocal = function () {
 const _retryWrong = retryWrong;
 retryWrong = function () {
     _retryWrong();
-    // normalmente no hay score, ocultamos el badge si quieres:
-    // syncFabResult();
 };
 
 modeEl.onchange = () => {
@@ -723,9 +764,7 @@ function openEditModal(q) {
 
     modalQ = q;
 
-    // ✅ SOLO enunciado (sin numerales). Mantener saltos de línea.
     editPrompt.value = (q.prompt || "").replace(/\r\n/g, "\n");
-
     editOptions.value = (q.options || []).map((o) => o.t).join("\n");
 
     const def = q.correct && q.correct.length ? q.correct[0] + 1 : 1;
@@ -799,7 +838,6 @@ editSave.addEventListener("click", async () => {
         if (!modalQ) return;
         if (authRole !== "admin") return alert("Solo admin");
 
-        // ✅ Mantener saltos de línea y limpiar \r\n
         const rawPrompt = (editPrompt.value || "").replace(/\r\n/g, "\n").trim();
         const { origNo, clean } = extractOrigNoAndClean(rawPrompt);
 
@@ -815,19 +853,17 @@ editSave.addEventListener("click", async () => {
         if (Number.isNaN(ci) || ci < 0 || ci >= opts.length)
             return alert("Índice correcta inválido.");
 
-        // ✅ Paso 3: origNo seguro (solo 1..N)
         const safeOrigNo =
             typeof origNo === "number" && Number.isFinite(origNo) && origNo > 0
                 ? origNo
                 : null;
 
-        // ✅ Paso 4: guardar con safeOrigNo
         const r1 = await apiFetch(`/admin/questions/${modalQ.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                prompt: clean,       // se guarda el texto sin "123."
-                origNo: safeOrigNo,  // se guarda el numeral en campo separado
+                prompt: clean,
+                origNo: safeOrigNo,
                 options: opts,
                 correctIndex: ci,
             }),
@@ -875,7 +911,7 @@ function extractOrigNoAndClean(text) {
     let s = (text || "").replace(/\r\n/g, "\n").trim();
     let origNo = null;
 
-    const m = s.match(/^\s*(\d+)\s*[\.\)]\s+/); // "123. " o "123) "
+    const m = s.match(/^\s*(\d+)\s*[\.\)]\s+/);
     if (m) {
         const n = parseInt(m[1], 10);
         if (!Number.isNaN(n) && n > 0) origNo = n;
@@ -901,36 +937,28 @@ async function parseDaypoXmlText(xmlText) {
 
     const pe = doc.querySelector("parsererror");
     if (pe)
-        throw new Error(
-            "XML inválido o corrupto (parsererror). Revisa el export de Daypo."
-        );
+        throw new Error("XML inválido o corrupto (parsererror). Revisa el export de Daypo.");
 
     const titleNode = doc.querySelector("p > t");
     const title = (titleNode?.textContent || "Cuestionario").trim();
 
     const root = doc.documentElement;
-    const container = Array.from(root.children).find(
-        (x) => x.tagName.toLowerCase() === "c"
-    );
+    const container = Array.from(root.children).find((x) => x.tagName.toLowerCase() === "c");
     if (!container) throw new Error("No se encontró el nodo <c> contenedor de preguntas.");
 
     const items = [];
     const qnodes = Array.from(container.children);
 
     for (const qnode of qnodes) {
-        const pEl = Array.from(qnode.children).find(
-            (x) => x.tagName.toLowerCase() === "p"
-        );
+        const pEl = Array.from(qnode.children).find((x) => x.tagName.toLowerCase() === "p");
         const pText = (pEl?.textContent || "").trim();
         const { origNo, clean } = extractOrigNoAndClean(pText);
 
-        const rEl = Array.from(qnode.children).find(
-            (x) => x.tagName.toLowerCase() === "r"
-        );
+        const rEl = Array.from(qnode.children).find((x) => x.tagName.toLowerCase() === "r");
         const options = rEl
             ? Array.from(rEl.children)
-                .map((x) => (x.textContent || "").trim())
-                .filter(Boolean)
+                  .map((x) => (x.textContent || "").trim())
+                  .filter(Boolean)
             : [];
 
         let code = "";
