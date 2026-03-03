@@ -626,3 +626,29 @@ textarea{ resize: vertical; min-height: 110px; }
   padding: 0 10px;
   opacity: 0.9;
 }
+
+/* ===== Admin delete button mejora visual ===== */
+
+.quiz-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quiz-list li span {
+  flex: 1;
+}
+
+/* Botón eliminar más discreto */
+.quiz-list li .btn.ghost {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  opacity: 0.85;
+  border-radius: 10px;
+}
+
+.quiz-list li .btn.ghost:hover {
+  opacity: 1;
+}
