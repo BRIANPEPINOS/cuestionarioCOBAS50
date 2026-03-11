@@ -184,34 +184,36 @@ function getLimit() {
     return n;
 }
 
-function stableSeed(quizId, limit, randomize) {
-    const key = `${quizId}:${limit ?? "all"}:${randomize ? 1 : 0}`;
-    let h = 0;
-    for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
-    return h;
-}
+// function stableSeed(quizId, limit, randomize) {
+//     const key = `${quizId}:${limit ?? "all"}:${randomize ? 1 : 0}`;
+//     let h = 0;
+//     for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+//     return h;
+// }
 
-function sampleStable(arr, n, seed) {
+function sampleRandom(arr, n) {
     const a = arr.slice();
-    let x = seed || 123456789;
-    function rnd() {
-        x = (1103515245 * x + 12345) >>> 0;
-        return x / 0xffffffff;
-    }
+
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(rnd() * (i + 1));
+        const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
     }
+
     return a.slice(0, n);
 }
 
-function pickQuestions(questions, quizId) {
+function pickQuestions(questions) {
     const limit = getLimit();
-    if (!limit) return questions;
+    if (!limit) return questions.slice();
+
     const n = Math.min(limit, questions.length);
-    if (!randomEl.checked) return questions.slice(0, n);
-    const seed = stableSeed(quizId, limit, true);
-    return sampleStable(questions, n, seed);
+
+    if (!randomEl.checked) {
+        return questions.slice(0, n);
+    }
+
+    // ✅ ahora sí realmente aleatorio en cada carga
+    return sampleRandom(questions, n);
 }
 
 /* ===============================
@@ -481,7 +483,7 @@ async function openQuizFromAPI(quizId) {
     });
 
     // ✅ Base test + active practice
-    baseQuestions = pickQuestions(normalized, quizId);
+    baseQuestions = pickQuestions(normalized);
     activeQuestions = baseQuestions.slice();
 
     renderQuestions(activeQuestions);
