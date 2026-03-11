@@ -1,4 +1,4 @@
-const CACHE = "daypo-offline-v2";
+const CACHE = "daypo-offline-v3";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
